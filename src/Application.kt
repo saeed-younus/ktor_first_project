@@ -55,11 +55,17 @@ fun Application.module(testing: Boolean = false) {
 
         }
 
+        get("/user") {
+            call.respond(User("Saeed", "123456"))
+        }
+
         get("/json/jackson") {
             call.respond(mapOf("hello" to "world"))
         }
     }
 }
+
+data class User(val name: String, val password: String)
 
 class AuthenticationException : RuntimeException()
 class AuthorizationException : RuntimeException()
