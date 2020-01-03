@@ -1,23 +1,29 @@
 package com.example
 
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
-import io.ktor.features.*
-import io.ktor.routing.*
-import io.ktor.http.*
-import io.ktor.auth.*
-import com.fasterxml.jackson.databind.*
-import io.ktor.jackson.*
-import io.ktor.client.*
-import io.ktor.client.engine.apache.*
+import com.example.model.User
+import com.example.routes.createUser
+import com.example.routes.getUsers
+import com.fasterxml.jackson.databind.SerializationFeature
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
+import io.ktor.features.StatusPages
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.jackson.jackson
+import io.ktor.response.respond
+import io.ktor.response.respondText
+import io.ktor.routing.get
+import io.ktor.routing.routing
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-    install(CORS) {
+    /*install(CORS) {
         method(HttpMethod.Options)
         method(HttpMethod.Put)
         method(HttpMethod.Delete)
@@ -29,7 +35,9 @@ fun Application.module(testing: Boolean = false) {
     }
 
     install(Authentication) {
-    }
+    }*/
+
+    install(DefaultHeaders)
 
     install(ContentNegotiation) {
         jackson {
@@ -37,8 +45,10 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
-    val client = HttpClient(Apache) {
-    }
+//    val client = HttpClient(Apache) {
+//    }
+
+    val list = ArrayList<User>()
 
     routing {
         get("/") {
@@ -52,21 +62,23 @@ fun Application.module(testing: Boolean = false) {
             exception<AuthorizationException> { cause ->
                 call.respond(HttpStatusCode.Forbidden)
             }
+            exception<Throwable> { e ->
+                call.respondText(e.localizedMessage, ContentType.Text.Plain, HttpStatusCode.InternalServerError)
+            }
 
-        }
-
-        get("/user") {
-            call.respond(User("Saeed", "123456"))
         }
 
         get("/json/jackson") {
             call.respond(mapOf("hello" to "world"))
         }
+
+
+        createUser(list)
+        getUsers(list)
     }
 }
-
-data class User(val name: String, val password: String)
 
 class AuthenticationException : RuntimeException()
 class AuthorizationException : RuntimeException()
 
+const val API_VERSION = "/api/v1"
