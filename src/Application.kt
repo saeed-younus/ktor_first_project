@@ -1,12 +1,13 @@
 package com.example
 
 import com.example.model.User
-import com.example.routes.createUser
-import com.example.routes.getUsers
+import com.example.routes.userApi
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.auth.Authentication
+import io.ktor.auth.jwt.jwt
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
@@ -45,6 +46,22 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
+    val jwtService = JwtService()
+
+    install(Authentication) {
+        jwt("jwt") {
+            verifier(jwtService.verifier)
+            realm = "firstProject app"
+            validate {
+                val payload = it.payload
+                val claim = payload.getClaim("id")
+                val claimString = claim.asString()
+                val user = User(id = 1, displayName = "Saeed", password = "asd") // user User object replace with db select query
+                user
+            }
+        }
+    }
+
 //    val client = HttpClient(Apache) {
 //    }
 
@@ -72,9 +89,7 @@ fun Application.module(testing: Boolean = false) {
             call.respond(mapOf("hello" to "world"))
         }
 
-
-        createUser(list)
-        getUsers(list)
+        userApi(list)
     }
 }
 

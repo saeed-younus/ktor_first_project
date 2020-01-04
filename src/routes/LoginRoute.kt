@@ -11,13 +11,12 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 
-const val USER = "$API_VERSION/user"
-fun Route.userApi(list: ArrayList<User>) {
-    authenticate("jwt") {
-        get(USER + "s") {
-            call.respond(list.toArray())
-        }
-    }
+
+const val LOGIN = "$API_VERSION/login"
+
+var id = 0
+
+fun Route.loginApi(list: ArrayList<User>) {
     post(USER) {
         val request = call.receive<CreateUserRequestModel>()
         list.add(User(id++, request.name, request.password))
