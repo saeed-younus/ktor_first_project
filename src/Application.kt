@@ -48,6 +48,8 @@ fun Application.module(testing: Boolean = false) {
 
     val jwtService = JwtService()
 
+    val list = ArrayList<User>()
+
     install(Authentication) {
         jwt("jwt") {
             verifier(jwtService.verifier)
@@ -56,16 +58,12 @@ fun Application.module(testing: Boolean = false) {
                 val payload = it.payload
                 val claim = payload.getClaim("id")
                 val claimString = claim.asString()
-                val user = User(id = 1, displayName = "Saeed", password = "asd") // user User object replace with db select query
+                val user =
+                    list.findLast { it.id == claimString.toInt() } // user User object replace with db select query
                 user
             }
         }
     }
-
-//    val client = HttpClient(Apache) {
-//    }
-
-    val list = ArrayList<User>()
 
     routing {
         get("/") {
@@ -89,7 +87,7 @@ fun Application.module(testing: Boolean = false) {
             call.respond(mapOf("hello" to "world"))
         }
 
-        userApi(list)
+        userApi(list, jwtService)
     }
 }
 
